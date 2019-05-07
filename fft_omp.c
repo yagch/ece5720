@@ -26,7 +26,7 @@ void fft(double complex* array, unsigned long array_size)
   unsigned long n = 1, i;
   unsigned long a = array_size / 2;
 
-  // Create file
+  Create file
   //fp = fopen("results.txt", "w");
 
   // Alocate and init W
@@ -60,7 +60,7 @@ void fft(double complex* array, unsigned long array_size)
     fprintf(fp, "Samples[%i] = %.2f + %.2fi\n", i, creal(array[i]), cimag(array[i]));
   }*/
 
-  fclose(fp);
+  //fclose(fp);
   free(W);
 }
 
