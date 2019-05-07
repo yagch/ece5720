@@ -15,6 +15,7 @@
 
 void fftOmp_initWtable(double complex *W, int W_size);
 void fftUtils_reverseArray(double complex* array, int array_size);
+void serial_reverseArray(double complex* array, int array_size);
 double fftOmp_randomGen (double *seed);
 int reverse(int N, int n);
 
@@ -78,7 +79,7 @@ void serial_fft(double complex* array, unsigned long array_size)
   fftOmp_initWtable(W, array_size);
 
   // Bits Inversion
-  reverseArray(array, 8);
+  serial_reverseArray(array, 8);
 
   // Executing main FFT algorithm
   printf("  Executing FFT... \n");
@@ -115,8 +116,8 @@ int main(int argc, char const *argv[]) {
   unsigned long n;
   static double seed;
 
-  float runtime, runtime2;
-  struct timespec start, end, start2, end2;
+  float runtime, runtime1;
+  struct timespec start, end, start1, end1;
 
   printf(" ********************************* \n");
   printf(" *** FFT - OMP implentation  ***** \n");
@@ -232,7 +233,7 @@ void fftUtils_reverseArray(double complex* array, int array_size)
 
 }
 
-void reverseArray(double complex* array, int array_size)
+void serial_reverseArray(double complex* array, int array_size)
 {
   double complex temp;
   int reversion_idx, i;
