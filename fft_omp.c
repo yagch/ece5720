@@ -26,7 +26,7 @@ void fft(double complex* array, unsigned long array_size)
   unsigned long a = array_size / 2;
 
   // Create file
-  fp = fopen("results.txt", "w");
+  //fp = fopen("results.txt", "w");
 
   // Alocate and init W
   W = (double complex*) malloc( array_size/2 * sizeof(complex double));
@@ -55,11 +55,54 @@ void fft(double complex* array, unsigned long array_size)
     a = a / 2;
   }
 
-  for (int i = 0; i < array_size; i++) {
+  /*for (int i = 0; i < array_size; i++) {
+    fprintf(fp, "Samples[%i] = %.2f + %.2fi\n", i, creal(array[i]), cimag(array[i]));
+  }*/
+
+  fclose(fp);
+  free(W);
+}
+
+void serial_fft(double complex* array, unsigned long array_size)
+{
+  FILE *fp;
+  double complex *W;
+  unsigned long n = 1, i;
+  unsigned long a = array_size / 2;
+
+  // Create file
+  //fp = fopen("results.txt", "w");
+
+  // Alocate and init W
+  W = (double complex*) malloc( array_size/2 * sizeof(complex double));
+  fftOmp_initWtable(W, array_size);
+
+  // Bits Inversion
+  reverseArray(array, 8);
+
+  // Executing main FFT algorithm
+  printf("  Executing FFT... \n");
+  // For through stages
+  for(unsigned long j = 0; j < log2(array_size); j++) {
+  // Main loop paralelization
+    for(i = 0; i < array_size; i++) {
+      if(!(i & n)) {
+         double complex temp_first_component = array[i];
+         double complex temp_second_component = W[(i * a) % (n * a)]* array[i + n];
+
+         array[i] = temp_first_component + temp_second_component;
+         array[i + n] = temp_first_component - temp_second_component;
+      }
+    }
+    n *= 2;
+    a = a / 2;
+  }
+
+  /*for (int i = 0; i < array_size; i++) {
     fprintf(fp, "Samples[%i] = %.2f + %.2fi\n", i, creal(array[i]), cimag(array[i]));
   }
 
-  fclose(fp);
+  fclose(fp);*/
   free(W);
 }
 
@@ -72,8 +115,8 @@ int main(int argc, char const *argv[]) {
   unsigned long n;
   static double seed;
 
-  float runtime;
-  struct timespec start, end;
+  float runtime, runtime2;
+  struct timespec start, end, start2, end2;
 
   printf(" ********************************* \n");
   printf(" *** FFT - OMP implentation  ***** \n");
@@ -118,6 +161,11 @@ int main(int argc, char const *argv[]) {
   clock_gettime(CLOCK_MONOTONIC, &end);
   runtime = end.tv_nsec - start.tv_nsec + (double) (end.tv_sec - start.tv_sec) * BILLION;
   printf("Runtime is %lfns\n", runtime);
+  clock_gettime(CLOCK_MONOTONIC, &start1);
+  serial_fft(input, n);
+  clock_gettime(CLOCK_MONOTONIC, &end1);
+  runtime1 = end1.tv_nsec - start1.tv_nsec + (double) (end1.tv_sec - start1.tv_sec) * BILLION;
+  printf("serial Runtime is %lfns\n", runtime1);
   printf("  Success! Results are in results.txt file\n");
 
   free(input);
@@ -183,3 +231,20 @@ void fftUtils_reverseArray(double complex* array, int array_size)
   }
 
 }
+
+void reverseArray(double complex* array, int array_size)
+{
+  double complex temp;
+  int reversion_idx, i;
+
+  for(i = 0; i < array_size/2; i++)
+  {
+    reversion_idx = reverse(array_size, i);
+
+    temp = array[i];
+    array[i] = array[reversion_idx];
+    array[reversion_idx] = temp;
+  }
+
+}
+
