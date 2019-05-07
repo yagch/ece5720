@@ -26,7 +26,7 @@ void fft(double complex* array, unsigned long array_size)
   unsigned long n = 1, i;
   unsigned long a = array_size / 2;
 
-  Create file
+  //Create file
   //fp = fopen("results.txt", "w");
 
   // Alocate and init W
